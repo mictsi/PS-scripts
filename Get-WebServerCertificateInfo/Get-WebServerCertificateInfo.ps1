@@ -68,6 +68,7 @@ function Get-WebServerCertificateInfo {
         }
 
         $certificateInfo = [PSCustomObject]@{
+            testedHost             = $WebServer
             CommonName             = $commonName
             StartDate              = $x509Certificate.NotBefore
             EndDate                = $x509Certificate.NotAfter
