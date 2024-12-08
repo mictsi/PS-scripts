@@ -10,6 +10,9 @@ the common name, start date, end date, subject alternative name, thumbprint, and
 .PARAMETER WebServer
 The hostname or IP address of the web server from which to retrieve the SSL certificate details.
 
+.PARAMETER Port
+The port number to connect to on the web server. The default value is 443.
+
 .EXAMPLE
 Get-WebServerCertificateInfo -WebServer "www.example.com"
 This command retrieves the SSL certificate details from the web server "www.example.com".
@@ -23,18 +26,16 @@ within the specified timeout period (default is 1 second).
 function Get-WebServerCertificateInfo {
     param (
         [Parameter(Mandatory = $true)]
-        [string]$WebServer
-
-        
+        [string]$WebServer,
+        [int]$Port = 443
     )
-
     try {
         # Create a TCP connection to the web server on port 443 with a timeout
         [int]$TimeoutSeconds = 1
         $tcpClient = New-Object System.Net.Sockets.TcpClient
-        $asyncResult = $tcpClient.BeginConnect($WebServer, 443, $null, $null)
+        $asyncResult = $tcpClient.BeginConnect($WebServer, $Port, $null, $null)
         if (-not $asyncResult.AsyncWaitHandle.WaitOne([TimeSpan]::FromSeconds($TimeoutSeconds), $false)) {
-            throw "Connection timed out after $TimeoutSeconds seconds."
+            throw "Connection timed out or could not connect."
         }
 
         $tcpClient.EndConnect($asyncResult)
@@ -68,12 +69,14 @@ function Get-WebServerCertificateInfo {
         }
 
         $certificateInfo = [PSCustomObject]@{
+            webServer              = $webServer    
             CommonName             = $commonName
             StartDate              = $x509Certificate.NotBefore
             EndDate                = $x509Certificate.NotAfter
             SubjectAlternativeName = if ($sanExtension) { $sanExtension.Format($false) -replace "DNS Name=", "" } else { "Not Available" }
             Thumbprint             = $x509Certificate.Thumbprint
             IssuerName             = $IssuerName
+            message                = "Certificate retrieved successfully for $webServer."
             
         }
 
@@ -85,12 +88,25 @@ function Get-WebServerCertificateInfo {
     }
     catch {
         Write-Error "Error retrieving certificate from $WebServer`: $_"
+
+        # return empty object with null values
+        return [PSCustomObject]@{
+            webServer              = $WebServer
+            CommonName             = $null
+            StartDate              = $null
+            EndDate                = $null
+            SubjectAlternativeName = $null
+            Thumbprint             = $null
+            IssuerName             = $null
+            message                = "Error retrieving certificate for $WebServer"
+        }
     }
 }
 
-# Example usage
-#Get-WebServerCertificateInfo -WebServer "kth.se"
+# Example usage without specifying the port
+Get-WebServerCertificateInfo -WebServer "google.com"
 
-# Example usage
-#Get-WebServerCertificateInfo -WebServer "google.com"
+# Example usage with specifying the port
+Get-WebServerCertificateInfo -WebServer "google.com" -Port 443
+
 
