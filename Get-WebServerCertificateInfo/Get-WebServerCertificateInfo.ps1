@@ -69,6 +69,7 @@ function Get-WebServerCertificateInfo {
         }
 
         $certificateInfo = [PSCustomObject]@{
+            testedServer           = $webServer    
             CommonName             = $commonName
             StartDate              = $x509Certificate.NotBefore
             EndDate                = $x509Certificate.NotAfter
@@ -90,7 +91,7 @@ function Get-WebServerCertificateInfo {
 
         # return empty object with null values
         return [PSCustomObject]@{
-            webServer              = $WebServer
+            testedServer           = $WebServer
             CommonName             = $null
             StartDate              = $null
             EndDate                = $null
@@ -106,6 +107,4 @@ function Get-WebServerCertificateInfo {
 Get-WebServerCertificateInfo -WebServer "google.com"
 
 # Example usage with specifying the port
-Get-WebServerCertificateInfo -WebServer "google.com" -Port 443
-
-
+Get-WebServerCertificateInfo -WebServer "google.com" -Port 8443
