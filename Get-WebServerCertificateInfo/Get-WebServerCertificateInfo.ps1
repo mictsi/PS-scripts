@@ -104,7 +104,7 @@ function Get-WebServerCertificateInfo {
 }
 
 # Example usage without specifying the port
-Get-WebServerCertificateInfo -WebServer "google.com"
+#Get-WebServerCertificateInfo -WebServer "google.com"
 
 # Example usage with specifying the port
-Get-WebServerCertificateInfo -WebServer "google.com" -Port 8443
+#Get-WebServerCertificateInfo -WebServer "google.com" -Port 8443
